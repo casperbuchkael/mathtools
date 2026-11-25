@@ -1,0 +1,885 @@
+
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MathTools – Matematik gjort nemt</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f7f9fc;
+    color: #172033;
+}
+
+header {
+    background: white;
+    padding: 18px 7%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e8edf5;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.logo-icon {
+    background: #2563eb;
+    color: white;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-size: 25px;
+}
+
+.logo span:last-child { color: #2563eb; }
+
+nav a {
+    text-decoration: none;
+    color: #475569;
+    margin-left: 25px;
+    font-size: 14px;
+}
+
+.hero {
+    text-align: center;
+    padding: 65px 20px 35px;
+}
+
+.hero h1 {
+    font-size: clamp(32px, 5vw, 48px);
+    margin-bottom: 12px;
+}
+
+.hero p {
+    color: #64748b;
+    font-size: 17px;
+}
+
+.search {
+    width: min(520px, 90%);
+    padding: 16px 20px;
+    margin-top: 25px;
+    border: 1px solid #dce3ed;
+    border-radius: 12px;
+    font-size: 16px;
+    outline: none;
+}
+
+.search:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px #2563eb20;
+}
+
+main {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px 25px 70px;
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.section-heading h2 { font-size: 25px; }
+
+#resultCount {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.calculator-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.calculator {
+    background: white;
+    border: 1px solid #e8edf5;
+    border-radius: 16px;
+    padding: 23px;
+    transition: 0.2s;
+}
+
+.calculator:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px #17203312;
+}
+
+.calculator .symbol {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    background: #eff6ff;
+    color: #2563eb;
+    display: grid;
+    place-items: center;
+    font-size: 23px;
+    font-weight: bold;
+    margin-bottom: 16px;
+}
+
+.calculator h3 {
+    margin: 0 0 9px;
+    font-size: 18px;
+}
+
+.calculator p {
+    color: #64748b;
+    font-size: 14px;
+    min-height: 38px;
+    line-height: 1.5;
+}
+
+.open-button {
+    width: 100%;
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 9px;
+    font-size: 15px;
+    cursor: pointer;
+    margin-top: 12px;
+}
+
+.open-button:hover { background: #1d4ed8; }
+
+/* Beregner-vindue */
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    z-index: 10;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal.show { display: flex; }
+
+.modal-content {
+    background: white;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 18px;
+    padding: 30px;
+    position: relative;
+    animation: appear 0.2s ease;
+}
+
+@keyframes appear {
+    from { transform: translateY(15px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    border: none;
+    background: #f1f5f9;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.modal-content h2 {
+    margin: 5px 35px 8px 0;
+}
+
+.modal-description {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+.field { margin-bottom: 16px; }
+
+.field label {
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 7px;
+}
+
+.field input {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #dce3ed;
+    border-radius: 9px;
+    font-size: 16px;
+}
+
+.field input:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+
+.calculate-button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 9px;
+    background: #2563eb;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.calculate-button:hover { background: #1d4ed8; }
+
+.result {
+    display: none;
+    margin-top: 20px;
+    padding: 18px;
+    border-radius: 12px;
+    background: #eff6ff;
+    color: #1e40af;
+    overflow-wrap: anywhere;
+}
+
+.result.show { display: block; }
+
+.result strong {
+    display: block;
+    margin-bottom: 7px;
+}
+
+footer {
+    background: white;
+    border-top: 1px solid #e8edf5;
+    text-align: center;
+    padding: 30px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.empty {
+    display: none;
+    text-align: center;
+    color: #64748b;
+    padding: 40px;
+}
+
+@media (max-width: 850px) {
+    .calculator-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 550px) {
+    .calculator-grid { grid-template-columns: 1fr; }
+    nav { display: none; }
+    .hero { padding-top: 45px; }
+    .modal-content { padding: 23px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">
+        <div class="logo-icon">∑</div>
+        <div>Math<span>Tools</span></div>
+    </div>
+
+    <nav>
+        <a href="#">Forside</a>
+        <a href="#beregnere">Beregnere</a>
+        <a href="#om">Om os</a>
+    </nav>
+</header>
+
+<section class="hero">
+    <h1>Matematik gjort nemt.</h1>
+    <p>Find den beregner, du har brug for, og få svaret på få sekunder.</p>
+
+    <input
+        class="search"
+        type="text"
+        id="searchInput"
+        placeholder="Søg efter en beregner..."
+        oninput="searchCalculators()"
+    >
+</section>
+
+<main id="beregnere">
+    <div class="section-heading">
+        <h2>Alle beregnere</h2>
+        <span id="resultCount">30 beregnere</span>
+    </div>
+
+    <div class="calculator-grid" id="calculatorGrid"></div>
+
+    <div class="empty" id="emptyMessage">
+        <h3>Ingen beregnere fundet</h3>
+        <p>Prøv at søge efter noget andet.</p>
+    </div>
+</main>
+
+<!-- Vinduet, hvor den valgte beregner åbnes -->
+
+<div class="modal" id="calculatorModal" onclick="outsideClose(event)">
+    <div class="modal-content">
+        <button class="close" onclick="closeCalculator()">×</button>
+        <h2 id="modalTitle"></h2>
+        <p class="modal-description" id="modalDescription"></p>
+
+        <div id="modalFields"></div>
+
+        <button class="calculate-button" onclick="calculate()">
+            Beregn resultat
+        </button>
+
+        <div class="result" id="resultBox">
+            <strong>Resultat</strong>
+            <span id="resultText"></span>
+        </div>
+    </div>
+</div>
+
+<footer id="om">
+    <div class="logo" style="justify-content:center; font-size:20px;">
+        <div class="logo-icon">∑</div>
+        <div>Math<span>Tools</span></div>
+    </div>
+    <p>Matematik gjort nemt – én beregning ad gangen.</p>
+    <p>© 2026 MathTools</p>
+</footer>
+
+<script>
+const calculators = [
+{
+    title: "Førstegradsligning",
+    description: "Løs en ligning af typen ax + b = c.",
+    symbol: "x",
+    fields: ["a", "b", "c"],
+    labels: ["a", "b", "c"],
+    placeholders: ["F.eks. 2", "F.eks. 4", "F.eks. 10"],
+    calculate: v => {
+        if (v[0] === 0) throw "a må ikke være 0.";
+        return "x = " + fmt((v[2] - v[1]) / v[0]);
+    }
+},
+{
+    title: "Hældningskoefficient",
+    description: "Beregn hældningen mellem to punkter.",
+    symbol: "↗",
+    fields: ["x1", "y1", "x2", "y2"],
+    labels: ["x₁", "y₁", "x₂", "y₂"],
+    placeholders: ["F.eks. 1", "F.eks. 2", "F.eks. 3", "F.eks. 6"],
+    calculate: v => {
+        if (v[2] === v[0]) throw "Punkterne må ikke have samme x-værdi.";
+        return "Hældningskoefficienten er " + fmt((v[3] - v[1]) / (v[2] - v[0]));
+    }
+},
+{
+    title: "Afstand mellem to punkter",
+    description: "Find afstanden mellem to punkter i et koordinatsystem.",
+    symbol: "↔",
+    fields: ["x1", "y1", "x2", "y2"],
+    labels: ["x₁", "y₁", "x₂", "y₂"],
+    placeholders: ["0", "0", "3", "4"],
+    calculate: v => "Afstanden er " + fmt(Math.hypot(v[2]-v[0], v[3]-v[1]))
+},
+{
+    title: "Midtpunkt mellem to punkter",
+    description: "Beregn midtpunktet mellem to koordinater.",
+    symbol: "•",
+    fields: ["x1", "y1", "x2", "y2"],
+    labels: ["x₁", "y₁", "x₂", "y₂"],
+    placeholders: ["0", "0", "4", "6"],
+    calculate: v => "Midtpunktet er (" + fmt((v[0]+v[2])/2) + "; " + fmt((v[1]+v[3])/2) + ")"
+},
+{
+    title: "Funktionsberegner",
+    description: "Beregn f(x) = ax + b for en bestemt x-værdi.",
+    symbol: "f(x)",
+    fields: ["a", "b", "x"],
+    labels: ["a", "b", "x"],
+    placeholders: ["2", "3", "5"],
+    calculate: v => "f(" + fmt(v[2]) + ") = " + fmt(v[0]*v[2]+v[1])
+},
+{
+    title: "Aritmetisk talfølge",
+    description: "Find et bestemt led i en aritmetisk talfølge.",
+    symbol: "n",
+    fields: ["a1", "d", "n"],
+    labels: ["Første led (a₁)", "Differens (d)", "Lednummer (n)"],
+    placeholders: ["2", "3", "10"],
+    calculate: v => {
+        if (!Number.isInteger(v[2]) || v[2] < 1) throw "n skal være et heltal på mindst 1.";
+        return "Led nummer " + v[2] + " er " + fmt(v[0]+(v[2]-1)*v[1]);
+    }
+},
+{
+    title: "Geometrisk talfølge",
+    description: "Find et bestemt led i en geometrisk talfølge.",
+    symbol: "×",
+    fields: ["a1", "r", "n"],
+    labels: ["Første led (a₁)", "Fremskrivningsfaktor (r)", "Lednummer (n)"],
+    placeholders: ["2", "3", "5"],
+    calculate: v => {
+        if (!Number.isInteger(v[2]) || v[2] < 1) throw "n skal være et heltal på mindst 1.";
+        return "Led nummer " + v[2] + " er " + fmt(v[0]*Math.pow(v[1],v[2]-1));
+    }
+},
+{
+    title: "Fakultet",
+    description: "Beregn fakultetet af et heltal, f.eks. 5!.",
+    symbol: "!",
+    fields: ["n"],
+    labels: ["Heltal (n)"],
+    placeholders: ["F.eks. 5"],
+    calculate: v => {
+        if (!Number.isInteger(v[0]) || v[0] < 0 || v[0] > 170) throw "Indtast et heltal mellem 0 og 170.";
+        let r = 1;
+        for(let i=2;i<=v[0];i++) r *= i;
+        return v[0] + "! = " + fmt(r);
+    }
+},
+{
+    title: "Permutationer",
+    description: "Beregn hvor mange rækkefølger man kan lave.",
+    symbol: "P",
+    fields: ["n", "r"],
+    labels: ["Antal elementer (n)", "Antal valgte (r)"],
+    placeholders: ["5", "3"],
+    calculate: v => {
+        const [n,r] = v;
+        if (!Number.isInteger(n) || !Number.isInteger(r) || n<0 || r<0 || r>n || n>170) throw "Brug heltal, hvor 0 ≤ r ≤ n ≤ 170.";
+        let result=1;
+        for(let i=n-r+1;i<=n;i++) result*=i;
+        return "Antal permutationer: " + fmt(result);
+    }
+},
+{
+    title: "Kombinationer",
+    description: "Beregn hvor mange måder man kan vælge elementer på.",
+    symbol: "C",
+    fields: ["n", "r"],
+    labels: ["Antal elementer (n)", "Antal valgte (r)"],
+    placeholders: ["5", "2"],
+    calculate: v => {
+        const [n,r] = v;
+        if (!Number.isInteger(n) || !Number.isInteger(r) || n<0 || r<0 || r>n || n>170) throw "Brug heltal, hvor 0 ≤ r ≤ n ≤ 170.";
+        let result=1;
+        const k=Math.min(r,n-r);
+        for(let i=1;i<=k;i++) result=result*(n-k+i)/i;
+        return "Antal kombinationer: " + fmt(result);
+    }
+},
+{
+    title: "Gennemsnit",
+    description: "Find gennemsnittet af en række tal.",
+    symbol: "x̄",
+    fields: ["numbers"],
+    labels: ["Tal adskilt med komma"],
+    placeholders: ["F.eks. 2, 4, 6, 8"],
+    type: "list",
+    calculate: v => "Gennemsnittet er " + fmt(v.reduce((a,b)=>a+b,0)/v.length)
+},
+{
+    title: "Median",
+    description: "Find det midterste tal i en talrække.",
+    symbol: "M",
+    fields: ["numbers"],
+    labels: ["Tal adskilt med komma"],
+    placeholders: ["F.eks. 2, 4, 6, 8"],
+    type: "list",
+    calculate: v => {
+        const a=[...v].sort((x,y)=>x-y);
+        const m=Math.floor(a.length/2);
+        return "Medianen er " + fmt(a.length%2 ? a[m] : (a[m-1]+a[m])/2);
+    }
+},
+{
+    title: "Typetal",
+    description: "Find det tal, der forekommer flest gange.",
+    symbol: "T",
+    fields: ["numbers"],
+    labels: ["Tal adskilt med komma"],
+    placeholders: ["F.eks. 2, 3, 3, 4, 5"],
+    type: "list",
+    calculate: v => {
+        const counts={};
+        v.forEach(x=>counts[x]=(counts[x]||0)+1);
+        const max=Math.max(...Object.values(counts));
+        return "Typetal: " + Object.keys(counts).filter(x=>counts[x]===max).join(", ");
+    }
+},
+{
+    title: "Variationsbredde",
+    description: "Find forskellen mellem det største og mindste tal.",
+    symbol: "↕",
+    fields: ["numbers"],
+    labels: ["Tal adskilt med komma"],
+    placeholders: ["F.eks. 2, 4, 8, 10"],
+    type: "list",
+    calculate: v => "Variationsbredden er " + fmt(Math.max(...v)-Math.min(...v))
+},
+{
+    title: "Standardafvigelse",
+    description: "Beregn standardafvigelsen for en hel population.",
+    symbol: "σ",
+    fields: ["numbers"],
+    labels: ["Tal adskilt med komma"],
+    placeholders: ["F.eks. 2, 4, 6, 8"],
+    type: "list",
+    calculate: v => {
+        const mean=v.reduce((a,b)=>a+b,0)/v.length;
+        const variance=v.reduce((s,x)=>s+(x-mean)**2,0)/v.length;
+        return "Standardafvigelsen er " + fmt(Math.sqrt(variance));
+    }
+},
+{
+    title: "Sandsynlighed",
+    description: "Beregn sandsynligheden for en hændelse.",
+    symbol: "%",
+    fields: ["favorable", "total"],
+    labels: ["Antal gunstige udfald", "Antal mulige udfald"],
+    placeholders: ["2", "6"],
+    calculate: v => {
+        if(v[1]<=0 || v[0]<0 || v[0]>v[1]) throw "Kontrollér antallet af udfald.";
+        return "Sandsynligheden er " + fmt(v[0]/v[1]*100) + "%";
+    }
+},
+{
+    title: "Trekantens areal",
+    description: "Beregn arealet af en trekant.",
+    symbol: "△",
+    fields: ["base", "height"],
+    labels: ["Grundlinje", "Højde"],
+    placeholders: ["10", "5"],
+    calculate: v => {
+        if(v.some(x=>x<0)) throw "Værdierne må ikke være negative.";
+        return "Arealet er " + fmt(v[0]*v[1]/2);
+    }
+},
+{
+    title: "Trekantens omkreds",
+    description: "Beregn omkredsen af en trekant.",
+    symbol: "△",
+    fields: ["a", "b", "c"],
+    labels: ["Side a", "Side b", "Side c"],
+    placeholders: ["3", "4", "5"],
+    calculate: v => {
+        if(v.some(x=>x<=0) || v[0]+v[1]<=v[2] || v[0]+v[2]<=v[1] || v[1]+v[2]<=v[0]) throw "Siderne kan ikke danne en trekant.";
+        return "Omkredsen er " + fmt(v.reduce((a,b)=>a+b,0));
+    }
+},
+{
+    title: "Cirklens areal",
+    description: "Beregn arealet af en cirkel ud fra radius.",
+    symbol: "○",
+    fields: ["r"],
+    labels: ["Radius"],
+    placeholders: ["5"],
+    calculate: v => {
+        if(v[0]<0) throw "Radius må ikke være negativ.";
+        return "Arealet er " + fmt(Math.PI*v[0]**2);
+    }
+},
+{
+    title: "Kuglens rumfang",
+    description: "Beregn rumfanget af en kugle.",
+    symbol: "●",
+    fields: ["r"],
+    labels: ["Radius"],
+    placeholders: ["3"],
+    calculate: v => {
+        if(v[0]<0) throw "Radius må ikke være negativ.";
+        return "Rumfanget er " + fmt(4/3*Math.PI*v[0]**3);
+    }
+},
+{
+    title: "Kubbens rumfang",
+    description: "Beregn rumfanget af en kube.",
+    symbol: "□",
+    fields: ["a"],
+    labels: ["Sidens længde"],
+    placeholders: ["4"],
+    calculate: v => {
+        if(v[0]<0) throw "Sidens længde må ikke være negativ.";
+        return "Rumfanget er " + fmt(v[0]**3);
+    }
+},
+{
+    title: "Kasseformens rumfang",
+    description: "Beregn rumfanget af en kasse.",
+    symbol: "▣",
+    fields: ["l", "w", "h"],
+    labels: ["Længde", "Bredde", "Højde"],
+    placeholders: ["5", "3", "2"],
+    calculate: v => {
+        if(v.some(x=>x<0)) throw "Målene må ikke være negative.";
+        return "Rumfanget er " + fmt(v[0]*v[1]*v[2]);
+    }
+},
+{
+    title: "Cylinderens rumfang",
+    description: "Beregn rumfanget af en cylinder.",
+    symbol: "◉",
+    fields: ["r", "h"],
+    labels: ["Radius", "Højde"],
+    placeholders: ["3", "8"],
+    calculate: v => {
+        if(v.some(x=>x<0)) throw "Målene må ikke være negative.";
+        return "Rumfanget er " + fmt(Math.PI*v[0]**2*v[1]);
+    }
+},
+{
+    title: "Keglens rumfang",
+    description: "Beregn rumfanget af en kegle.",
+    symbol: "△",
+    fields: ["r", "h"],
+    labels: ["Radius", "Højde"],
+    placeholders: ["3", "8"],
+    calculate: v => {
+        if(v.some(x=>x<0)) throw "Målene må ikke være negative.";
+        return "Rumfanget er " + fmt(Math.PI*v[0]**2*v[1]/3);
+    }
+},
+{
+    title: "Cylinderens overfladeareal",
+    description: "Beregn cylinderens samlede overfladeareal.",
+    symbol: "◉",
+    fields: ["r", "h"],
+    labels: ["Radius", "Højde"],
+    placeholders: ["3", "8"],
+    calculate: v => {
+        if(v.some(x=>x<0)) throw "Målene må ikke være negative.";
+        return "Overfladearealet er " + fmt(2*Math.PI*v[0]*(v[0]+v[1]));
+    }
+},
+{
+    title: "Længdeomregner",
+    description: "Omregn mellem millimeter, centimeter, meter og kilometer.",
+    symbol: "↔",
+    fields: ["value"],
+    labels: ["Antal meter"],
+    placeholders: ["F.eks. 2.5"],
+    calculate: v => "Millimeter: " + fmt(v[0]*1000) + " mm\nCentimeter: " + fmt(v[0]*100) + " cm\nMeter: " + fmt(v[0]) + " m\nKilometer: " + fmt(v[0]/1000) + " km"
+},
+{
+    title: "Vægtomregner",
+    description: "Omregn mellem milligram, gram, kilogram og ton.",
+    symbol: "⚖",
+    fields: ["value"],
+    labels: ["Antal kilogram"],
+    placeholders: ["F.eks. 2"],
+    calculate: v => "Milligram: " + fmt(v[0]*1000000) + " mg\nGram: " + fmt(v[0]*1000) + " g\nKilogram: " + fmt(v[0]) + " kg\nTon: " + fmt(v[0]/1000) + " ton"
+},
+{
+    title: "Temperaturberegner",
+    description: "Omregn mellem Celsius og Fahrenheit.",
+    symbol: "°C",
+    fields: ["c"],
+    labels: ["Temperatur i Celsius"],
+    placeholders: ["F.eks. 20"],
+    calculate: v => fmt(v[0]) + " °C = " + fmt(v[0]*9/5+32) + " °F"
+},
+{
+    title: "Tidsomregner",
+    description: "Omregn sekunder til minutter, timer og dage.",
+    symbol: "◷",
+    fields: ["seconds"],
+    labels: ["Antal sekunder"],
+    placeholders: ["F.eks. 3600"],
+    calculate: v => {
+        if(v[0]<0) throw "Antallet må ikke være negativt.";
+        return "Sekunder: " + fmt(v[0]) + "\nMinutter: " + fmt(v[0]/60) + "\nTimer: " + fmt(v[0]/3600) + "\nDage: " + fmt(v[0]/86400);
+    }
+},
+{
+    title: "Talomregner",
+    description: "Omregn et decimaltal til binært og hexadecimalt.",
+    symbol: "01",
+    fields: ["number"],
+    labels: ["Heltal i titalssystemet"],
+    placeholders: ["F.eks. 25"],
+    calculate: v => {
+        if(!Number.isSafeInteger(v[0])) throw "Indtast et sikkert heltal.";
+        return "Decimal: " + v[0] + "\nBinært: " + v[0].toString(2) + "\nHexadecimalt: " + v[0].toString(16).toUpperCase();
+    }
+}
+];
+
+let activeCalculator = null;
+
+function fmt(number) {
+    if (!Number.isFinite(number)) return String(number);
+    return Number(number.toPrecision(10)).toLocaleString("da-DK", {
+        maximumFractionDigits: 8
+    });
+}
+
+function renderCalculators() {
+    const grid = document.getElementById("calculatorGrid");
+    grid.innerHTML = "";
+
+    calculators.forEach((calc, index) => {
+        const card = document.createElement("div");
+        card.className = "calculator";
+
+        const symbol = document.createElement("div");
+        symbol.className = "symbol";
+        symbol.textContent = calc.symbol;
+
+        const title = document.createElement("h3");
+        title.textContent = calc.title;
+
+        const description = document.createElement("p");
+        description.textContent = calc.description;
+
+        const button = document.createElement("button");
+        button.className = "open-button";
+        button.textContent = "Åbn beregner →";
+        button.onclick = () => openCalculator(index);
+
+        card.append(symbol, title, description, button);
+        grid.appendChild(card);
+    });
+}
+
+function searchCalculators() {
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    const cards = document.querySelectorAll(".calculator");
+    let visible = 0;
+
+    cards.forEach((card, index) => {
+        const calc = calculators[index];
+        const text = (calc.title + " " + calc.description + " " + calc.symbol).toLowerCase();
+        const matches = text.includes(search);
+
+        card.style.display = matches ? "" : "none";
+        if(matches) visible++;
+    });
+
+    document.getElementById("resultCount").textContent =
+        visible + (visible === 1 ? " beregner" : " beregnere");
+
+    document.getElementById("emptyMessage").style.display =
+        visible === 0 ? "block" : "none";
+}
+
+function openCalculator(index) {
+    activeCalculator = calculators[index];
+    document.getElementById("modalTitle").textContent = activeCalculator.title;
+    document.getElementById("modalDescription").textContent = activeCalculator.description;
+
+    const fields = document.getElementById("modalFields");
+    fields.innerHTML = "";
+
+    activeCalculator.fields.forEach((field, i) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "field";
+
+        const label = document.createElement("label");
+        label.htmlFor = "field_" + i;
+        label.textContent = activeCalculator.labels[i];
+
+        const input = document.createElement("input");
+        input.id = "field_" + i;
+        input.type = activeCalculator.type === "list" ? "text" : "number";
+        input.placeholder = activeCalculator.placeholders[i];
+
+        if (input.type === "number") {
+            input.step = "any";
+        }
+
+        wrapper.append(label, input);
+        fields.appendChild(wrapper);
+    });
+
+    document.getElementById("resultBox").classList.remove("show");
+    document.getElementById("calculatorModal").classList.add("show");
+
+    setTimeout(() => {
+        const first = document.getElementById("field_0");
+        if(first) first.focus();
+    }, 100);
+}
+
+function closeCalculator() {
+    document.getElementById("calculatorModal").classList.remove("show");
+    activeCalculator = null;
+}
+
+function outsideClose(event) {
+    if(event.target.id === "calculatorModal") closeCalculator();
+}
+
+function calculate() {
+    if(!activeCalculator) return;
+
+    try {
+        let values;
+
+        if(activeCalculator.type === "list") {
+            const raw = document.getElementById("field_0").value;
+            values = raw.split(",").map(x => x.trim()).filter(x => x !== "").map(Number);
+
+            if(values.length === 0 || values.some(x => !Number.isFinite(x))) {
+                throw "Indtast en række gyldige tal adskilt med komma.";
+            }
+        } else {
+            values = activeCalculator.fields.map((field, i) => {
+                const input = document.getElementById("field_" + i);
+                if(input.value.trim() === "") throw "Udfyld alle felter.";
+                const value = Number(input.value);
+                if(!Number.isFinite(value)) throw "Indtast gyldige tal.";
+                return value;
+            });
+        }
+
+        const answer = activeCalculator.calculate(values);
+
+        document.getElementById("resultText").textContent = answer;
+        document.getElementById("resultBox").classList.add("show");
+
+    } catch(error) {
+        document.getElementById("resultText").textContent =
+            typeof error === "string" ? error : "Der opstod en fejl. Kontrollér dine tal.";
+        document.getElementById("resultBox").classList.add("show");
+    }
+}
+
+document.addEventListener("keydown", event => {
+    if(event.key === "Escape") closeCalculator();
+
+    if(event.key === "Enter" &&
+       document.getElementById("calculatorModal").classList.contains("show")) {
+        calculate();
+    }
+});
+
+renderCalculators();
+</script>
+
+</body>
+</html>
